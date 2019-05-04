@@ -1,8 +1,8 @@
 """Test code for the test. """
 import math
-import matplotlib.pyplot as plt
 from sub_system import frame
 from sub_system import math_function as mf
+from sub_system import logger
 import numpy as np
 
 def main():
@@ -16,16 +16,7 @@ def main():
     print(f'Initial angular_velocity: {model.get_angular_velocity()}')
     print(f'Initial angular_acceleration: {model.get_angular_acceleration()}')
 
-    log_tim = []
-    log_pos = []
-    log_vel = []
-    log_acc = []
-    log_ang = []
-    log_avl = []
-    log_aac = []
-    log_rof = []
-    log_rom = []
-    log_fm  = []
+    log = logger.Logger()
 
     time = 0
     integral = 0.0
@@ -42,16 +33,7 @@ def main():
             #     print(rotor.get_total_force())
 
         # logging datas
-        log_tim.append(model.dynamics.get_time())
-        log_pos.append(model.get_position())
-        log_vel.append(model.get_velocity())
-        log_acc.append(model.get_acceleration())
-        log_ang.append([angle * 180 / math.pi for angle in model.get_euler_angle()]) #log_ang.append(model.get_quartanion())#
-        log_avl.append(model.get_angular_velocity())
-        log_aac.append(model.get_angular_acceleration())
-        log_rof.append([rotor.get_total_force() for rotor in model.r])
-        log_rom.append([rotor.get_total_torque() for rotor in model.r])
-        log_fm.append(np.hstack((model.get_force(), model.get_torque())))
+        log.add_data(model)
 
         # Guidance: State & Nominal Position -> Nominal attitude
         position = model.get_position()
@@ -96,56 +78,7 @@ def main():
         time += 1
 
     # Visulize datas
-    fig, ax = plt.subplots(3,3, sharex='col')
-    lineobj = ax[0,0].plot(log_tim, log_pos)
-    ax[0,0].legend(iter(lineobj), ['x','y','z'])
-    ax[0,0].set_title('CoG position [m]')
-    ax[0,0].grid()
-
-    lineobj = ax[1,0].plot(log_tim, log_vel)
-    ax[1,0].legend(iter(lineobj), ['dxdt','dydt','dzdt'])
-    ax[1,0].set_title('CoG velocity [m/s]')
-    ax[1,0].grid()
-
-    lineobj = ax[2,0].plot(log_tim, log_acc)
-    ax[2,0].legend(iter(lineobj), ['d2xdt2','dy2dt2','dz2dt2'])
-    ax[2,0].set_title('CoG acceleration [m/s2]')
-    ax[2,0].set_xlabel('time [s]')
-    ax[2,0].grid()
-
-    lineobj = ax[0,1].plot(log_tim, log_ang)
-    ax[0,1].legend(iter(lineobj), ['roll','pitch','yaw'])
-    ax[0,1].set_title('Attitude angle [deg]')
-    ax[0,1].grid()
-
-    lineobj = ax[1,1].plot(log_tim, log_avl)
-    ax[1,1].legend(iter(lineobj), ['p','q','r'])
-    ax[1,1].set_title('Anguler velocity [deg/s]')
-    ax[1,1].grid()
-
-    lineobj = ax[2,1].plot(log_tim, log_aac)
-    ax[2,1].legend(iter(lineobj), ['dpdt','dqdt','drdt'])
-    ax[2,1].set_title('Angular acceleration [deg/s2]')
-    ax[2,1].set_xlabel('time [s]')
-    ax[2,1].grid()
-
-    lineobj = ax[0,2].plot(log_tim, [[log[2] for log in log_rotor] for log_rotor in log_rof])
-    ax[0,2].legend(iter(lineobj), ['rotor1','rotor2','rotor3','rotor4'])
-    ax[0,2].set_title('propeller force [N]')
-    ax[0,2].grid()
-
-    lineobj = ax[1,2].plot(log_tim, [[log[2] for log in log_rotor] for log_rotor in log_rom])
-    ax[1,2].legend(iter(lineobj), ['rotor1','rotor2','rotor3','rotor4'])
-    ax[1,2].set_title('propeller torque [NM]')
-    ax[1,2].grid()
-
-    lineobj = ax[2,2].plot(log_tim, log_fm)
-    ax[2,2].legend(iter(lineobj), ['fx','fy','fz','mx','my','mz'])
-    ax[2,2].set_title('CoG Force / Moment')
-    ax[2,2].set_xlabel('time [s]')
-    ax[2,2].grid()
-
-    plt.show()
+    log.visualize_data()
 
 if __name__ == '__main__':
     main()
