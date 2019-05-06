@@ -29,6 +29,24 @@ class Multicopter(object):
             rotor.set_displacement((x,y,0.0))
             rotor.set_lambda(x*y)
 
+    def read_random_dir_settings(self):
+        """
+        Variable rotor thrust direction about 10%.
+        ```py
+        random_vec = 10 + np.random.rand(3)
+        random_vec /= np.linalg.norm(random_vec)
+        ```
+        """
+        for i, rotor in enumerate(self.r):
+            x = np.float((i % 2)*2 -1)
+            y = np.float((i // 2)*2 -1)
+            rotor.set_displacement((x,y,0.0))
+            rotor.set_lambda(x*y)
+
+            random_vec = 10 + np.random.rand(3)
+            random_vec /= np.linalg.norm(random_vec)
+            rotor.set_direction(random_vec)
+
     def integrate(self, arr_inputs):
         self.set_inputs(arr_inputs)
 
@@ -128,6 +146,9 @@ class Multicopter(object):
 
     def get_torque(self):
         return self.torque
+
+    def get_status(self):
+        return np.hstack((self.dynamics.get_status(), self.dynamics.get_input()))
 
 
     # setter

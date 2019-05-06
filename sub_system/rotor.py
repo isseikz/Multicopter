@@ -85,6 +85,9 @@ class Dynamics(object):
     def set_lambda(self, value):
         self.lmd = value
 
+    def set_direction(self, dir):
+        self.direction = dir
+
     # getter
 
     def get_t(self):
