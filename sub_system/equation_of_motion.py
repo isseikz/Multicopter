@@ -53,6 +53,15 @@ class SixDOF(object):
         self.integrator.set_initial_value(self.x)
         self.integrator.set_solout(self.post_process)
 
+    def reset_state(self):
+        self.x = np.zeros((13), dtype=float) # pos, vel, quart, rot
+        self.set_quartanion_from()
+        self.u = np.zeros((6), dtype=float) # acc, angular acc
+        self.integrator = ode(f=self.dxdt)
+        self.integrator.set_integrator('dopri5')
+        self.integrator.set_initial_value(self.x, t=self.t + self.dt)
+        self.integrator.set_solout(self.post_process)
+
 
     def dxdt(self, t, y):
         self.t = t
@@ -86,6 +95,9 @@ class SixDOF(object):
 
     def normalize_quartanion(self):
         self.x[6:10] /= np.linalg.norm(self.x[6:10])
+
+    def set_time(self, t):
+        self.t = t
 
     def set_input(self, input):
         self.u = input

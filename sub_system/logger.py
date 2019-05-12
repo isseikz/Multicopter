@@ -32,9 +32,9 @@ class Logger(object):
         self.log_rom.append([rotor.get_total_torque() for rotor in model.r])
         self.log_fm.append(np.hstack((model.get_force(), model.get_torque())))
 
-    def visualize_data(self):
+    def visualize_data(self, save=False, filename=''):
         # Visulize datas
-        fig, ax = plt.subplots(3,3, sharex='col')
+        fig, ax = plt.subplots(3,3, sharex='col', figsize=(12,9))
         lineobj = ax[0,0].plot(self.log_tim, self.log_pos)
         ax[0,0].legend(iter(lineobj), ['x','y','z'])
         ax[0,0].set_title('CoG position [m]')
@@ -82,5 +82,7 @@ class Logger(object):
         ax[2,2].set_title('CoG Force / Moment')
         ax[2,2].set_xlabel('time [s]')
         ax[2,2].grid()
+
+        plt.savefig('./model/'+filename+'_log.png')
 
         plt.show()

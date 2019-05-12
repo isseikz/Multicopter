@@ -14,12 +14,12 @@ class Dynamics(object):
         self.direction = np.array([0.0, 0.0, -1.0]) # body frame
         self.displacement = np.array([1.0, 0.0, 0.0]) # displacement
         self.lmd = 1.0  # rotation direction: 1 = 'cw', -1 = 'ccw'
-        self.ct = 0.01  # thrust coefficient
+        self.ct = 0.0050 # thrust coefficient
         self.cq = 0.01  # torque coefficient
         self.m = 0.005 # weight [kg]
 
         self.input = 0.0  # control input: [0.0, 1.0]
-        self.tau = 3.0  # time constant
+        self.tau = 0.125  # time constant
         self.max_speed = 1000
 
         self.t = 0.0
@@ -47,7 +47,7 @@ class Dynamics(object):
             u = 0.0
         else:
             u = input
-        return self.tau * (self.max_speed * u - y)
+        return 1/self.tau * (self.max_speed * u - y)
 
     def get_total_force(self):
         return self.thrust() + self.drag_force()
@@ -87,6 +87,11 @@ class Dynamics(object):
 
     def set_direction(self, dir):
         self.direction = dir
+
+    def reset_speed(self):
+        self.speed = 0.0
+        self.input = 0.0
+        self.integrator.set_initial_value(self.speed, t=self.t + self.dt)
 
     # getter
 

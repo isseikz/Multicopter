@@ -4,6 +4,7 @@ import numpy as np
 from . import math_function as mf
 from . import equation_of_motion as em
 from . import rotor
+from . import sensor
 
 class Multicopter(object):
     """Multicopter model expression.
@@ -13,7 +14,7 @@ class Multicopter(object):
     def __init__(self, n_rotor=4):
         super(Multicopter, self).__init__()
         self.m = 1.0
-        self.I = np.eye(3)
+        self.I = np.diag([0.1, 0.1, 1.0])
         self.I_inv = np.linalg.inv(self.I)
         self.dynamics = em.SixDOF(0.0, 0.01)
         self.gravity = np.array([0.0, 0.0, 9.81])
@@ -21,6 +22,7 @@ class Multicopter(object):
         self.ur = np.zeros(n_rotor, dtype=float) # inputs to the rotors
         self.force = np.zeros(3)
         self.torque = np.zeros(3)
+        self.sensor = sensor.sixDOF()
 
     def read_regular_settings(self):
         for i, rotor in enumerate(self.r):
@@ -43,8 +45,9 @@ class Multicopter(object):
             rotor.set_displacement((x,y,0.0))
             rotor.set_lambda(x*y)
 
-            random_vec = 10 + np.random.rand(3)
+            random_vec = 0.5 + np.random.rand(3)
             random_vec /= np.linalg.norm(random_vec)
+            random_vec *= [1.0, 1.0, -1.0]
             rotor.set_direction(random_vec)
 
     def integrate(self, arr_inputs):
@@ -150,11 +153,22 @@ class Multicopter(object):
     def get_status(self):
         return np.hstack((self.dynamics.get_status(), self.dynamics.get_input()))
 
+    def get_sensor_acceleration(self):
+        return self.sensor.monitor_acceleration(self)
+
 
     # setter
     def reset_force_and_torque(self):
         self.force[:] = 0.0
         self.torque[:] = 0.0
+
+    def reset_rotor(self):
+        for rotor in self.r:
+            rotor.reset_speed()
+
+    def reset_all(self):
+        self.reset_rotor()
+        self.dynamics.reset_state()
 
     def set_inputs(self, arr_inputs):
         self.ur = arr_inputs
