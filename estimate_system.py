@@ -257,7 +257,7 @@ def main():
     ax[1].plot(log_est_t,np.array(log_ans)[:,5], label='ans_z')
     ax[1].legend()
     ax[1].grid()
-    ax[1].set_ylabel(r'$Angular\ Acceleration\ [deg/s^{2}]$')
+    ax[1].set_ylabel(r'$Angular\ Acceleration\ [rad/s^{2}]$')
 
     ax[1].set_xlabel(r'$Time[s]$')
     fig0.savefig('./model/'+file_date+'_log_est.png')
@@ -273,7 +273,7 @@ def main():
     ax1[1].plot(log_est_t, np.array(log_input), label='input')
     ax1[1].legend()
     ax1[1].grid()
-    ax1[1].set_ylabel(r'$Control input$')
+    ax1[1].set_ylabel(r'$Control\ input$')
 
     ax1[1].set_xlabel(r'$Time[s]$')
     fig1.savefig('./model/'+file_date+'_log_mse.png')
@@ -290,7 +290,7 @@ def main():
     ax2[0].plot(log_est_t, log_ans_s[:,0], label='ans x')
     ax2[0].plot(log_est_t, log_ans_s[:,1], label='ans y')
     ax2[0].plot(log_est_t, log_ans_s[:,2], label='ans z')
-    ax2[0].set_ylabel(r'$Position [m]$')
+    ax2[0].set_ylabel(r'$Position\ [m]$')
     ax2[0].legend()
     ax2[0].grid()
     ax2[1].plot(log_est_t, log_est_q[:,0], label='est roll')
@@ -299,14 +299,18 @@ def main():
     ax2[1].plot(log_est_t, log_ans_q[:,0], label='ans roll')
     ax2[1].plot(log_est_t, log_ans_q[:,1], label='ans pitch')
     ax2[1].plot(log_est_t, log_ans_q[:,2], label='ans yaw')
-    ax2[1].set_xlabel(r'$Time [s]$')
-    ax2[1].set_ylabel(r'$Euler Angles[rad]$')
+    ax2[1].set_xlabel(r'$Time\ [s]$')
+    ax2[1].set_ylabel(r'$Euler\ Angles\ [deg]$')
     ax2[1].legend()
     ax2[1].grid()
-    while time > 0:
+    while time > 500:
         ax2[1].set_xlim([(time-500)*0.01, time*0.01])
+        ax2[0].set_ylim([-3, 3])
         fig2.savefig('./model/'+file_date+'_comp_sim_ans_'+str(time)+'.png')
         time -= 1000
+    ax2[1].set_xlim([0.0, 5.0])
+    ax2[0].set_ylim([-3, 3])
+    fig2.savefig('./model/'+file_date+'_comp_sim_ans_'+str(time)+'.png')
 
     plt.show()
     # --- Visulize the performance of the estimator ---

@@ -58,12 +58,12 @@ class Logger(object):
 
         lineobj = ax[1,1].plot(self.log_tim, self.log_avl)
         ax[1,1].legend(iter(lineobj), ['p','q','r'])
-        ax[1,1].set_title('Anguler velocity [deg/s]')
+        ax[1,1].set_title('Anguler velocity [rad/s]')
         ax[1,1].grid()
 
         lineobj = ax[2,1].plot(self.log_tim, self.log_aac)
         ax[2,1].legend(iter(lineobj), ['dpdt','dqdt','drdt'])
-        ax[2,1].set_title('Angular acceleration [deg/s2]')
+        ax[2,1].set_title('Angular acceleration [rad/s2]')
         ax[2,1].set_xlabel('time [s]')
         ax[2,1].grid()
 
