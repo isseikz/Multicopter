@@ -112,13 +112,18 @@ class Multicopter(object):
         pos = self.get_position()
         vel = self.get_velocity()
         acc = self.get_acceleration()
-        if pos[2] > 0.0:
+        yaw = self.get_euler_angle()[2]
+        dyaw = self.get_angular_velocity()[2]
+        if (pos[2] > 0.00) | ((pos[2] == 0.00) & (acc[2] >= 0.00)):
+            # print(self.dynamics.get_time(), self.get_status(), 'dsg')
             pos[2] = 0.0
             vel[2] = 0.0
-            acc[2] = 0.0
             self.set_position(pos)
             self.set_velocity(vel)
-
+            self.set_quartanion_from(0.0, 0.0, yaw=yaw)
+            self.set_angular_velocity([0.0, 0.0, dyaw])
+            self.set_acceleration([0.0,0.0,0.0])
+            self.set_angular_acceleration([0.0,0.0,0.0])
         return
 
     # getter

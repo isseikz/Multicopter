@@ -44,7 +44,6 @@ class SixDOF(object):
     def __init__(self, t0, dt):
         super(SixDOF, self).__init__()
         self.x = np.zeros((13), dtype=float) # pos, vel, quart, rot
-        self.set_quartanion_from()
         self.u = np.zeros((6), dtype=float) # acc, angular acc
         self.t = t0
         self.dt = dt
@@ -52,6 +51,7 @@ class SixDOF(object):
         self.integrator.set_integrator('dopri5')
         self.integrator.set_initial_value(self.x)
         self.integrator.set_solout(self.post_process)
+        self.set_quartanion_from()
 
     def reset_state(self):
         self.x = np.zeros((13), dtype=float) # pos, vel, quart, rot
@@ -87,6 +87,7 @@ class SixDOF(object):
 
     def post_process(self, t, y):
         self.x = self.integrator.y
+        self.t = t
         self.normalize_quartanion()
 
     def step(self, input):
@@ -108,22 +109,27 @@ class SixDOF(object):
 
     def set_position(self, position):
         self.x[0:3] = position
+        self.integrator.set_initial_value(self.x, t=self.t)
 
     def set_velocity(self, velocity):
         self.x[3:6] = velocity
+        self.integrator.set_initial_value(self.x, t=self.t)
 
     def set_acceleration(self, acceleration):
         self.u[0:3] = acceleration
 
     def set_quartanion(self, quartanion):
         self.x[6:10] = quartanion
+        self.integrator.set_initial_value(self.x, t=self.t)
 
     def set_quartanion_from(self, roll=0.0, pitch=0.0, yaw=0.0):
         """set quartanion from euler angles."""
         self.x[6:10] = mf.quartanion_from(roll, pitch, yaw)
+        self.integrator.set_initial_value(self.x, t=self.t)
 
     def set_angular_velocity(self, p):
         self.x[10:13] = p
+        self.integrator.set_initial_value(self.x, t=self.t)
 
     def set_angular_acceleration(self, a):
         self.u[3:6] = a
