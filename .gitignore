@@ -1,2 +1,7 @@
 *.pyc
 *.csv
+
+*.bin
+*.png
+*.hdf5
+*.json
