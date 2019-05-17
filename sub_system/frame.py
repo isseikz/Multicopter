@@ -31,6 +31,17 @@ class Multicopter(object):
             rotor.set_displacement((x,y,0.0))
             rotor.set_lambda(x*y)
 
+    def read_regular_settings_omari(self):
+        self.m = 1.9
+        self.I = np.diag([0.031, 0.061, 0.085])
+        self.I_inv = np.linalg.inv(self.I)
+        for i, rotor in enumerate(self.r):
+            x = np.float((i % 2)*2 -1)
+            y = np.float((i // 2)*2 -1)
+            rotor.set_displacement((x,y,0.0))
+            rotor.set_lambda(x*y)
+            rotor.tau = 0.09
+
     def read_random_dir_settings(self):
         """
         Variable rotor thrust direction about 10%.

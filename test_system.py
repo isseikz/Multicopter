@@ -7,7 +7,8 @@ import numpy as np
 
 def main():
     model = frame.Multicopter()
-    model.read_regular_settings()
+    # model.read_regular_settings()
+    model.read_regular_settings_omari()
     model.show_settings()
     print(f'Initial position: {model.get_position()}')
     print(f'Initial velocity: {model.get_velocity()}')
@@ -20,7 +21,7 @@ def main():
 
     time = 0
     integral = 0.0
-    ref_pos = [0.5, -1.0, -1.0]
+    ref_pos = [1.0, -1.0, -1.0]
     ref_yaw = 0.0
     ref_final_yaw = math.atan2(ref_pos[1], ref_pos[0]) * 180 / (2 * math.pi)
     while time < 3000:
@@ -32,8 +33,6 @@ def main():
             # for rotor in model.r:
             #     print(rotor.get_total_force())
 
-        # logging datas
-        log.add_data(model)
 
         # Guidance: State & Nominal Position -> Nominal attitude
         position = model.get_position()
@@ -58,10 +57,12 @@ def main():
         attitude_deg = np.array(attitude) * 180 / math.pi
         ang_vel = model.get_angular_velocity()
 
+        k_p = 5.0
+        k_d = 0.99
         integral += (-1.0-altitude)
         inp_alt = -0.5 * (-1.0-altitude) -0.001 * integral - 0.5*(-vel_alt)
-        inp_rol = 4.0 * ( ref_roll - attitude_deg[0])/180 - 4 *0.99 * ang_vel[0]/(2*math.pi)
-        inp_pit = 4.0 * ( ref_pitch - attitude_deg[1])/180 - 4 *0.99 * ang_vel[1]/(2*math.pi)
+        inp_rol = k_p * ( ref_roll - attitude_deg[0])/180 - k_p * k_d * ang_vel[0]/(2*math.pi)
+        inp_pit = k_p * ( ref_pitch - attitude_deg[1])/180 - k_p * k_d * ang_vel[1]/(2*math.pi)
         inp_yaw = 1.0 * ( ref_yaw - attitude_deg[2])/180 - 1.0 * 0.99 * ang_vel[2]/(2*math.pi)
 
         arr_inputs = [
@@ -75,6 +76,9 @@ def main():
         #   You should NOT modify below in the loop
         #   if you are not familier with the system
         model.integrate(arr_inputs) # 左後，左前，右後，右前
+        # logging datas
+        # print(model.get_status())
+        log.add_data(model)
         time += 1
 
     # Visulize datas

@@ -59,13 +59,13 @@ def main():
 
     # --- load model ---
         #  If you want to load a pre-designed model, then uncomment.
-    with open('./model/Seminar 190513/20190516000814_target_model.bin', mode='rb', ) as f:
-        model = pickle.load(f)
+    # with open('./model/Seminar 190513/20190516000814_target_model.bin', mode='rb', ) as f:
+    #     model = pickle.load(f)
         # If you want to load a pre-designed model.
 
         # If you want to create a new model, then uncomment.
-    # model = frame.Multicopter()
-    # model.read_regular_settings()
+    model = frame.Multicopter()
+    model.read_regular_settings_omari()
         # If you want to create a new model.
     # --- load model ---
 
