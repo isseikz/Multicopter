@@ -5,3 +5,6 @@
 *.png
 *.hdf5
 *.json
+
+/model/*
+!/model/Seminar 190516/*
