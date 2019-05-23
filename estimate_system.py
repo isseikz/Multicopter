@@ -188,7 +188,7 @@ def main():
                 model.gravity,
                 model.get_quartanion())) / 9.81
             ,
-            model.get_angular_acceleration() ))
+            model.get_sensor_angular_velocity(ground_cond=True)))
 
         batch_y[0:-2, :] = batch_y[1:-1, :]
         batch_y[-1,:] = dnn_output
@@ -198,14 +198,23 @@ def main():
         log_ans_q.append(model.get_euler_angle())
         # --- save the result for the input at {time} step
 
-        # --- update estimator at every {n_sequences} step ---
-        # if row == n_sequences-1:
-        myGenerator.__set_data_label__(x, y)
-        hist = estimator.fit_generator(myGenerator, epochs=1, verbose=0)
-        history.append(hist.history['loss'])
-        #     row = 0
-        # row += 1
-        # --- update estimator every {n_sequences} step ---
+        # If you want to check the acceleration estimation, then comment in.
+        e = pred_acc - dnn_output[:3]
+        print(f'[{pred_acc[0]:.3f}, {pred_acc[1]:.3f}, {pred_acc[2]:.3f}]')
+        print(f'[{dnn_output[0]:.3f}, {dnn_output[1]:.3f}, {dnn_output[2]:.3f}]')
+        print(f'{np.dot(e, e.T):.3f}')
+        # If you want to check the acceleration estimation, then comment in.
+
+
+        # Don't update estimator during latter half -> for test
+        if time < terminate_time // 2:
+            # --- update estimator at every {n_sequences} step ---
+            # if row == n_sequences-1:
+            myGenerator.__set_data_label__(x, y)
+            #     row = 0
+            # row += 1
+            # --- update estimator every {n_sequences} step ---
+        # Don't update estimator during latter half
 
 
     # simulation loop has been finished!
@@ -217,7 +226,7 @@ def main():
     # --- save model and weights of the neural network
 
     # Visulize machine response
-    log.visualize_data(save=True, filename=file_date)
+    log.visualize_data(save=True, show=False, filename=file_date)
     # Visulize machine response
 
     # --- Visulize the performance of the estimator ---
@@ -239,6 +248,8 @@ def main():
         log_mse_ang[row] = (np.dot(log_error[row, 3:], log_error[row, 3:].T))
     log_mse_acc = np.sqrt(log_mse_acc)
     log_mse_ang = np.sqrt(log_mse_ang)
+    log_mse_ang_avg = [np.median(log_mse_ang[i:i+5]) for i in range(log_mse_ang.shape[0]-5)]
+    log_mse_ang_avg = np.hstack((np.zeros(5), np.array(log_mse_ang_avg)))
 
     plt.rcParams['font.size'] = 20
     plt.rcParams['font.family'] = 'sans-serif'
@@ -254,7 +265,8 @@ def main():
     ax[0].plot(log_est_t,np.array(log_ans)[:,2], label='ans_z')
     ax[0].legend()
     ax[0].grid()
-    ax[0].set_ylabel(r'$Acceleration\ [m/s^{2}]$')
+    ax[0].set_ylim([-5.0, 5.0])
+    ax[0].set_ylabel(r'$Acceleration\ [G]$')
 
     ax[1].plot(log_est_t,np.array(log_est)[:,3], label='est_x')
     ax[1].plot(log_est_t,np.array(log_est)[:,4], label='est_y')
@@ -264,10 +276,16 @@ def main():
     ax[1].plot(log_est_t,np.array(log_ans)[:,5], label='ans_z')
     ax[1].legend()
     ax[1].grid()
-    ax[1].set_ylabel(r'$Angular\ Acceleration\ [rad/s^{2}]$')
+    ax[1].set_ylim([-180, 180])
+    ax[1].set_ylabel(r'$Angular\ Acceleration\ [deg/s^{2}]$')
 
     ax[1].set_xlabel(r'$Time[s]$')
-    fig0.savefig('./model/'+file_date+'_log_est.png')
+    ax_time = time
+    while ax_time > 500:
+        ax[1].set_xlim([(ax_time-500)*0.01, ax_time*0.01])
+        fig0.savefig('./model/'+file_date+test_object+str(ax_time)+'.png')
+        ax_time -= 1000
+    fig0.savefig('./model/'+file_date+test_object+'.png')
 
 
     fig1, ax1 = plt.subplots(nrows=2, sharex=True, figsize=(16,12))
@@ -283,7 +301,7 @@ def main():
     ax1[1].set_ylabel(r'$Control\ input$')
 
     ax1[1].set_xlabel(r'$Time[s]$')
-    fig1.savefig('./model/'+file_date+'_log_mse.png')
+    fig1.savefig('./model/'+file_date+test_object+'mse.png')
 
     # compare simulation from estimated value and answer
     log_est_s = np.array(log_est_s)
@@ -313,11 +331,11 @@ def main():
     while time > 500:
         ax2[1].set_xlim([(time-500)*0.01, time*0.01])
         ax2[0].set_ylim([-3, 3])
-        fig2.savefig('./model/'+file_date+'_comp_sim_ans_'+str(time)+'.png')
+        fig2.savefig('./model/'+file_date+test_object+'comp_sim_ans_'+str(time)+'.png')
         time -= 1000
     ax2[1].set_xlim([0.0, 5.0])
     ax2[0].set_ylim([-3, 3])
-    fig2.savefig('./model/'+file_date+'_comp_sim_ans_'+str(time)+'.png')
+    fig2.savefig('./model/'+file_date+test_object+'comp_sim_ans_'+str(time)+'.png')
 
     plt.show()
     # --- Visulize the performance of the estimator ---
