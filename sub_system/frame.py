@@ -200,8 +200,17 @@ class Multicopter(object):
     def get_status(self):
         return np.hstack((self.dynamics.get_status(), self.dynamics.get_input()))
 
-    def get_sensor_acceleration(self):
-        return self.sensor.monitor_acceleration(self)
+    def get_sensor_acceleration(self, ground_cond=True):
+        if ground_cond: # It is on the ground, the acc is monitored as gravity
+            return self.sensor.monitor_raw_acceleration(self)
+        else:
+            return self.sensor.monitor_acceleration(self)
+
+    def get_sensor_angular_velocity(self, ground_cond=True):
+        if ground_cond: # It is on the ground, the acc is monitored as zeros
+            return self.sensor.monitor_raw_angular_velocity(self)
+        else:
+            return self.sensor.monitor_angular_velocity(self)
 
 
     # setter
