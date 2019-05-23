@@ -109,7 +109,7 @@ class Multicopter(object):
 
     def add_gyroscopic_torque(self):
         w = self.dynamics.get_angular_velocity()
-        self.torque += np.cross(w, np.dot(self.I, w))
+        self.torque -= np.cross(w, np.dot(self.I, w))
 
     def add_gravity_force(self):
         self.force += np.dot(self.m, self.gravity)
