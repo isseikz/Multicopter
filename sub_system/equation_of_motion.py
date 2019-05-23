@@ -94,6 +94,11 @@ class SixDOF(object):
         self.set_input(input)
         self.x = self.integrator.integrate(self.t+self.dt)
 
+    def step_angvel(self, input_acc, input_angvel):
+        self.set_acceleration(input_acc)
+        self.set_angular_velocity(input_angvel)
+        self.x = self.integrator.integrate(self.t + self.dt)
+
     def normalize_quartanion(self):
         self.x[6:10] /= np.linalg.norm(self.x[6:10])
 
