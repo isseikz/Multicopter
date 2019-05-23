@@ -162,7 +162,7 @@ def main():
         pred_acc = pred_accang[0:3]
         pred_ang = pred_accang[3:6]
         pred_q = pred_state.get_quartanion()
-        pred_acc_and_g = mf.convert_vector_body_to_inertial(pred_acc, pred_q) + np.array([0.0,0.0,9.81])
+        pred_acc_and_g = mf.convert_vector_body_to_inertial(pred_acc, pred_q) * 9.81 + np.array([0.0,0.0,9.81])
         pred_state.step(np.hstack((pred_acc_and_g, pred_ang)))
         log_est_s.append(pred_state.get_status())
         log_est_q.append(pred_state.get_euler_angle())
@@ -183,10 +183,10 @@ def main():
         # --- save the result for the input at {time} step
         sensor_acc = model.get_sensor_acceleration()
         dnn_output = np.hstack((
-            sensor_acc
+            (sensor_acc
             - mf.convert_vector_inertial_to_body(
                 model.gravity,
-                model.get_quartanion())
+                model.get_quartanion())) / 9.81
             ,
             model.get_angular_acceleration() ))
 
@@ -224,7 +224,17 @@ def main():
     # Visulize machine response
 
     # --- Visulize the performance of the estimator ---
-    log_error = np.array(log_est) -np.array(log_ans)
+    test_object = '_est_'
+
+    log_est = np.array(log_est)
+    log_ans = np.array(log_ans)
+
+    log_est[0:3] /= 9.81
+    log_ans[0:3] /= 9.81
+    log_est[3:6] *= 180.0 / np.pi
+    log_ans[3:6] *= 180.0 / np.pi
+
+    log_error = log_est - log_ans
     log_mse_acc = np.zeros(log_error.shape[0])
     log_mse_ang = np.zeros(log_error.shape[0])
     for row in range(log_error.shape[0]):
