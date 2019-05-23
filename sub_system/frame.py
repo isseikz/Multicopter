@@ -35,12 +35,32 @@ class Multicopter(object):
         self.m = 1.9
         self.I = np.diag([0.031, 0.061, 0.085])
         self.I_inv = np.linalg.inv(self.I)
+    def read_regular_settings_small(self):
+        self.m = 0.032
+        self.I = np.diag([2.3951E-5, 2.3951E-5, 3.2347E-5])
+        self.I_inv = np.linalg.inv(self.I)
         for i, rotor in enumerate(self.r):
-            x = np.float((i % 2)*2 -1)
-            y = np.float((i // 2)*2 -1)
+            x = np.float((i % 2)*2 -1) * 0.042
+            y = np.float((i // 2)*2 -1) * 0.042
             rotor.set_displacement((x,y,0.0))
             rotor.set_lambda(x*y)
             rotor.tau = 0.09
+            rotor.ct = 0.005
+            rotor.cq = 0.0037
+
+    def read_regular_settings_zhang(self):
+        self.m = 1.17
+        self.I = np.diag([1.27E-2, 1.27E-2, 2.29E-2])
+        self.I_inv = np.linalg.inv(self.I)
+        for i, rotor in enumerate(self.r):
+            x = np.float((i % 2)*2 -1)
+            y = np.float((i // 2)*2 -1)
+            z = 0.05
+            rotor.set_displacement((x*0.25*np.sqrt(2),y*0.25*np.sqrt(2),z))
+            rotor.set_lambda(x*y)
+            rotor.tau = 0.09
+            rotor.ct = 0.005
+            rotor.cq = 0.0037
 
     def read_random_dir_settings(self):
         """
