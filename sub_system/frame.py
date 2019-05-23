@@ -16,7 +16,9 @@ class Multicopter(object):
         self.m = 1.0
         self.I = np.diag([0.1, 0.1, 1.0])
         self.I_inv = np.linalg.inv(self.I)
-        self.dynamics = em.SixDOF(0.0, 0.01)
+        self.t0 = 0.0
+        self.dt = 0.01
+        self.dynamics = em.SixDOF(self.t0, self.dt)
         self.gravity = np.array([0.0, 0.0, 9.81])
         self.r = [rotor.Dynamics() for i in range(n_rotor)] # rotor instances
         self.ur = np.zeros(n_rotor, dtype=float) # inputs to the rotors
@@ -35,6 +37,15 @@ class Multicopter(object):
         self.m = 1.9
         self.I = np.diag([0.031, 0.061, 0.085])
         self.I_inv = np.linalg.inv(self.I)
+        for i, rotor in enumerate(self.r):
+            x = np.float((i % 2)*2 -1) * 0.1
+            y = np.float((i // 2)*2 -1) * 0.1
+            rotor.set_displacement((x,y,0.0))
+            rotor.set_lambda(x*y)
+            rotor.tau = 0.09
+            rotor.ct = 0.008
+            rotor.cq = 0.010
+
     def read_regular_settings_small(self):
         self.m = 0.032
         self.I = np.diag([2.3951E-5, 2.3951E-5, 3.2347E-5])
