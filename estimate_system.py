@@ -70,8 +70,8 @@ def main():
     # --- load model ---
 
     model.show_settings()
-    with open('./model/'+file_date+'_target_model.bin', 'wb') as f: # save model
-        pickle.dump(model, f, protocol=4)
+    # with open('./model/'+file_date+'_target_model.bin', 'wb') as f: # save model
+    #     pickle.dump(model, f, protocol=4)
 
     print(f'Initial position: {model.get_position()}')
     print(f'Initial velocity: {model.get_velocity()}')
@@ -212,11 +212,8 @@ def main():
 
     # --- save model and weights of the neural network
     print('save the architecture of a model')
-    f_model = './model'
-    json_string = estimator.to_json()
-    open(os.path.join(f_model,file_date+'_est_model.json'), 'w').write(json_string)
-    print('save weights')
-    estimator.save_weights(os.path.join(f_model,file_date+'_est_model_weights.hdf5'))
+    f_model = './model/'
+    estimator.save(f_model+file_date+'_estimator_model.h5')
     # --- save model and weights of the neural network
 
     # Visulize machine response
