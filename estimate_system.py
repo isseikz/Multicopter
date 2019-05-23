@@ -64,6 +64,7 @@ def main():
     tz_jst = datetime.timezone(datetime.timedelta(hours=9))
     dt_now = datetime.datetime.now(tz=tz_jst)
     file_date = dt_now.strftime('%Y%m%d%H%M%S')
+    terminate_time = 10000
 
     # --- load model ---
         #  If you want to load a pre-designed model, then uncomment.
@@ -134,7 +135,7 @@ def main():
     log_ans_s = []
     log_ans_q = []
 
-    while time <5001: # 1 sec/ 100steps
+    while time <terminate_time + 1: # 1 sec/ 100steps
         if time % 200 == 0:
             print(model.dynamics.get_time())
             # model.show_status()
