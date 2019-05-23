@@ -32,7 +32,7 @@ class Logger(object):
         self.log_rom.append([rotor.get_total_torque() for rotor in model.r])
         self.log_fm.append(np.hstack((model.get_force(), model.get_torque())))
 
-    def visualize_data(self, save=False, filename=''):
+    def visualize_data(self, save=False, show=True, filename=''):
         # Visulize datas
         fig, ax = plt.subplots(3,3, sharex='col', figsize=(12,9))
         lineobj = ax[0,0].plot(self.log_tim, self.log_pos)
@@ -85,4 +85,5 @@ class Logger(object):
 
         plt.savefig('./model/'+filename+'_log.png')
 
-        plt.show()
+        if show:
+            plt.show()
