@@ -19,26 +19,34 @@ from keras.callbacks import Callback
 import pickle
 import datetime
 
+def loss_function(y_true, y_label):
+    return (y_true - y_label)**2
+
 class MyGenerator(Sequence):
     """Custom generator"""
 
     def __init__(self, batch_size=1):
         """construction
         """
+        self.data = []
+        self.label = []
         self.batch_size = batch_size
 
     def __getitem__(self, idx):
         """Get batch data
         """
-        return self.data, self.label
+        x = np.reshape(np.array(self.data), (self.batch_size, 104))
+        y = np.reshape(np.array(self.label), (self.batch_size, 6))
+        return x, y
 
     def __len__(self):
         """Batch length"""
-        return 1
+        self.batch_size = len(self.data)
+        return self.batch_size
 
     def __set_data_label__(self, x, y):
-        self.data = x
-        self.label = y
+        self.data.append(x)
+        self.label.append(y)
 
     def on_epoch_end(self):
         """Task when end of epoch"""
@@ -65,7 +73,7 @@ def main():
 
         # If you want to create a new model, then uncomment.
     model = frame.Multicopter()
-    model.read_regular_settings_omari()
+    model.read_regular_settings_zhang()
         # If you want to create a new model.
     # --- load model ---
 
@@ -96,10 +104,11 @@ def main():
     input_dim = (n_input + n_states) * n_sequences + n_input
 
     estimator = Sequential()
-    estimator.add(Dense(units=32, activation='relu', input_dim=input_dim))
-    estimator.add(Dense(units=32, activation='relu'))
+    estimator.add(Dense(units=100, activation='relu', input_dim=input_dim))
+    estimator.add(Dense(units=100, activation='relu'))
+    estimator.add(Dense(units=100, activation='relu'))
     estimator.add(Dense(units=n_states, activation='linear'))
-    estimator.compile(optimizer='rmsprop',loss='mse')
+    estimator.compile(optimizer='rmsprop', loss='mse')
 
     myGenerator = MyGenerator()
     loss = LossHistory()
@@ -139,7 +148,11 @@ def main():
 
         # --- when certain time has passed or the vihicle is in dangerous state,
         #         the vehicle will be stopped and the state will be reset ---
-        if (time % 100 == 0) | any( abs(angle) > np.pi/3 for angle in model.get_euler_angle()):
+        if (time % 200 == 0) | any( abs(angle) > np.pi/3 for angle in model.get_euler_angle()):
+            if time > 0:
+                hist = estimator.fit_generator(myGenerator, epochs=1, verbose=1)
+                history.append(hist.history['loss'])
+
             print("--- Reset Vehicle Motion ---")
             model.reset_all()
             pred_state.reset_state()
@@ -181,7 +194,7 @@ def main():
         # --- Plant ---
 
         # --- save the result for the input at {time} step
-        sensor_acc = model.get_sensor_acceleration()
+        sensor_acc = model.get_sensor_acceleration(ground_cond=True)
         dnn_output = np.hstack((
             (sensor_acc
             - mf.convert_vector_inertial_to_body(
