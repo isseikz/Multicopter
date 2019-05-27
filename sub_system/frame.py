@@ -11,8 +11,7 @@ class Multicopter(object):
     Quadrotor model is default.
     """
 
-    def __init__(self, n_rotor=4):
-        super(Multicopter, self).__init__()
+    def __init__(self, n_rotor=4, ground_cond=True):
         self.m = 1.0
         self.I = np.diag([0.1, 0.1, 1.0])
         self.I_inv = np.linalg.inv(self.I)
@@ -25,6 +24,7 @@ class Multicopter(object):
         self.force = np.zeros(3)
         self.torque = np.zeros(3)
         self.sensor = sensor.sixDOF()
+        self.ground_cond = ground_cond
 
     def read_regular_settings(self):
         for i, rotor in enumerate(self.r):
@@ -105,7 +105,8 @@ class Multicopter(object):
 
         inputs = np.hstack((self.force/self.m, np.dot(self.I_inv, self.torque)))
         self.dynamics.step(inputs)
-        self.doesnt_sink_to_ground()
+        if self.ground_cond:
+            self.doesnt_sink_to_ground()
 
     def add_propeller_force_and_torque(self):
         for i, rotor in enumerate(self.r):
@@ -164,7 +165,7 @@ class Multicopter(object):
             self.set_velocity(vel)
             self.set_quartanion_from(0.0, 0.0, yaw=yaw)
             self.set_angular_velocity([0.0, 0.0, dyaw])
-            self.set_acceleration([0.0,0.0,0.0])
+            self.set_acceleration([0.0,0.0,0.0]) # canceled by normal force
             self.set_angular_acceleration([0.0,0.0,0.0])
         return
 
@@ -200,17 +201,18 @@ class Multicopter(object):
     def get_status(self):
         return np.hstack((self.dynamics.get_status(), self.dynamics.get_input()))
 
-    def get_sensor_acceleration(self, ground_cond=True):
-        if ground_cond: # It is on the ground, the acc is monitored as gravity
-            return self.sensor.monitor_raw_acceleration(self)
-        else:
+    def get_sensor_acceleration(self):
+        if self.ground_cond: # It is on the ground, the acc is monitored as gravity
             return self.sensor.monitor_acceleration(self)
-
-    def get_sensor_angular_velocity(self, ground_cond=True):
-        if ground_cond: # It is on the ground, the acc is monitored as zeros
-            return self.sensor.monitor_raw_angular_velocity(self)
         else:
+            return self.sensor.monitor_raw_acceleration(self)
+
+    def get_sensor_angular_velocity(self):
+        if self.ground_cond: # It is on the ground, the acc is monitored as zeros
             return self.sensor.monitor_angular_velocity(self)
+        else:
+            return self.sensor.monitor_raw_angular_velocity(self)
+
 
 
     # setter
